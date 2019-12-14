@@ -1,13 +1,26 @@
 (
-SynthDef(\help_notRand, {
-	var oute, preSig1, preSig2;
+SynthDef(\My_little_Synth, {
+	 |modSaw = 0, gainSaw = 1|
+	var oute, preSig1, preSig2, modulSaw;
 	preSig1 = Pulse.ar(freq: 440.0, width: 0.5, mul: 1.0, add: 0.0);
 	preSig2 = Saw.ar(freq: 440.0,  mul: 1.0,  add: 0.0 );
-	preSig1 = MouseX.kr(minval: -1, maxval: 1)*preSig1;
-	preSig2 = MouseY.kr(minval: -1, maxval: 1)*preSig2;
+	modulSaw = SinOsc.kr(freq: modSaw, mul:gainSaw );
+	preSig2 = preSig2 * modulSaw;
 	oute = preSig1 + preSig2;
-	// oute = SinOsc.ar(rrand(400, 800), 0, 0.2) * Line.kr(1, 0, 1, doneAction: 2);
     Out.ar(0, oute);
 }).add;
 )
-a = Synth(\help_notRand);
+x = Synth(\My_little_Synth, [modSaw: 2]);
+
+( a = Routine{
+	var duration;
+	duration = 1;
+	x = Synth(\My_little_Synth);
+	loop{
+		x.set(\modSaw, Pwhite(1, 10, inf).asStream,);
+		duration.yield;
+	}
+
+});
+
+a.play;
